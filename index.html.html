@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub de Juegos & Muro Secreto</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e0ebff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .locked-blur {
+            filter: blur(18px) grayscale(60%) opacity(0.5);
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col min-h-screen">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('muro')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-gamepad text-xl text-white"></i>
+                    </div>
+                    <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+                        GameHub & Wall
+                    </span>
+                </div>
+
+                <!-- Desktop Navigation Menu -->
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('muro')" id="nav-muro" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center space-x-2 text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
+                        <i class="fa-solid fa-[#fa-user-lock] fa-user-secret"></i>
+                        <span>Muro Secreto</span>
+                    </button>
+                    
+                    <button onclick="switchTab('juegos')" id="nav-juegos" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center space-x-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                        <i class="fa-solid fa-puzzle-piece"></i>
+                        <span>Juegos <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold">Hub</span></span>
+                    </button>
+                    
+                    <button onclick="switchTab('instrucciones')" id="nav-instrucciones" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center space-x-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Instrucciones</span>
+                    </button>
+                </nav>
+
+                <!-- Action Button / Reset -->
+                <div class="hidden md:flex items-center space-x-3">
+                    <button onclick="resetDataPrompt()" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 transition-all flex items-center space-x-1">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Reiniciar Datos</span>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-4 pt-2 pb-4 space-y-2 border-t border-slate-800 bg-slate-900/95">
+            <button onclick="switchTab('muro'); toggleMobileMenu();" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-indigo-400 bg-indigo-500/10 flex items-center space-x-2">
+                <i class="fa-solid fa-user-secret"></i>
+                <span>Muro Secreto</span>
+            </button>
+            <button onclick="switchTab('juegos'); toggleMobileMenu();" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 flex items-center space-x-2">
+                <i class="fa-solid fa-puzzle-piece"></i>
+                <span>Juegos</span>
+            </button>
+            <button onclick="switchTab('instrucciones'); toggleMobileMenu();" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 flex items-center space-x-2">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>Instrucciones</span>
+            </button>
+            <div class="pt-2 border-t border-slate-800">
+                <button onclick="resetDataPrompt(); toggleMobileMenu();" class="w-full text-left px-4 py-2 rounded-lg text-xs font-semibold text-rose-400 hover:bg-rose-500/10 flex items-center space-x-2">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Reiniciar Datos de Prueba</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- TAB 1: MURO SECRETO (ACTIVE BY DEFAULT) -->
+        <section id="tab-muro" class="tab-content space-y-8">
+            
+            <!-- Activity Header Control -->
+            <div class="glass-panel p-6 sm:p-8 rounded-2xl shadow-xl relative overflow-hidden border border-slate-800">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    
+                    <!-- Editable Activity Title -->
+                    <div class="space-y-2 flex-grow">
+                        <div class="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-indigo-400">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            <span>Nombre de la Actividad</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="text" id="activity-title-input" 
+                                class="bg-transparent text-2xl sm:text-3xl font-extrabold text-white border-b border-dashed border-slate-700 hover:border-indigo-500 focus:border-indigo-400 focus:outline-none w-full transition-all pb-1" 
+                                value="Reto Fotográfico Secreto 2026" 
+                                placeholder="Escribe el nombre de la actividad..." 
+                                onchange="saveActivityTitle(this.value)">
+                        </div>
+                        <p class="text-xs text-slate-400">Haz clic sobre el título arriba para personalizar el nombre de este reto o muro visual.</p>
+                    </div>
+
+                    <!-- Timer & Lock Status Controls -->
+                    <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center gap-4 min-w-[320px]">
+                        <div class="flex-grow space-y-1">
+                            <label for="unlock-datetime" class="block text-xs font-medium text-slate-400">
+                                <i class="fa-regular fa-clock text-indigo-400 mr-1"></i> Revelación Programada:
+                            </label>
+                            <input type="datetime-local" id="unlock-datetime" 
+                                class="bg-slate-950 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs w-full focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                                onchange="saveUnlockDate(this.value)">
+                        </div>
+                        <div class="flex flex-col justify-center items-center pt-2 sm:pt-0 sm:border-l sm:border-slate-800 sm:pl-4">
+                            <button id="admin-override-btn" onclick="toggleAdminOverride()" class="w-full sm:w-auto px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-2 bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20">
+                                <i class="fa-solid fa-key"></i>
+                                <span id="admin-btn-text">Modo Revelación Directa</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Countdown Banner -->
+                <div id="countdown-banner" class="mt-6 pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-3">
+                    <div class="flex items-center space-x-2">
+                        <span id="global-lock-icon" class="flex h-3 w-3 relative">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                        </span>
+                        <span id="status-text" class="font-medium text-slate-300">Estado: Fotos Ocultas por Bloqueo Temporal</span>
+                    </div>
+                    <div id="countdown-timer" class="font-mono text-sm font-semibold text-indigo-300 bg-indigo-950/60 border border-indigo-800/40 px-3 py-1 rounded-md">
+                        Calculando tiempo...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Grid Header -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-layer-group text-indigo-400"></i>
+                        <span>10 Categorías de fotos</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Sube 1 foto por categoría. Nadie podrá ver las fotos contrarias hasta la fecha establecida.</p>
+                </div>
+            </div>
+
+            <!-- 10 Secret Photo Categories Grid -->
+            <div id="categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+                <!-- Javascript standard render of 10 category cards -->
+            </div>
+
+        </section>
+
+        <!-- TAB 2: JUEGOS HUB (EXPANDABLE SECTION) -->
+        <section id="tab-juegos" class="tab-content hidden space-y-8">
+            <div class="glass-panel p-8 rounded-2xl border border-slate-800 relative overflow-hidden">
+                <div class="max-w-2xl">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        Próximas Actividades
+                    </span>
+                    <h2 class="text-3xl font-extrabold text-white mt-3 mb-2">Hub de Juegos en Equipo</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Esta sección está preparada para integrar dinámicamente nuevas actividades interactiva como Sopas de Letras, Acertijos, Colaboraciones de Collage o Muros Interactivos de preguntas.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Games Grid Placeholder -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Game 1: Muro Secreto (Active) -->
+                <div class="glass-card rounded-xl p-5 border border-indigo-500/40 relative overflow-hidden group hover:border-indigo-400 transition-all cursor-pointer" onclick="switchTab('muro')">
+                    <div class="w-12 h-12 rounded-lg bg-indigo-600/30 text-indigo-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-user-secret"></i>
+                    </div>
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 mb-2">ACTIVO AHORA</span>
+                    <h3 class="font-bold text-white text-base">Muro Secreto de Fotos</h3>
+                    <p class="text-xs text-slate-400 mt-1">Sube fotos secretas categorizadas y desbloquéalas programadamente en equipo.</p>
+                </div>
+
+                <!-- Game 2: Sopa de letras (Future) -->
+                <div class="glass-card rounded-xl p-5 border border-slate-800 opacity-80 hover:opacity-100 transition-all relative">
+                    <div class="w-12 h-12 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-font"></i>
+                    </div>
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 mb-2">PRÓXIMAMENTE</span>
+                    <h3 class="font-bold text-slate-200 text-base">Sopa de Letras Temática</h3>
+                    <p class="text-xs text-slate-400 mt-1">Busca palabras clave del equipo o evento contrarreloj.</p>
+                </div>
+
+                <!-- Game 3: Acertijos y Enigmas (Future) -->
+                <div class="glass-card rounded-xl p-5 border border-slate-800 opacity-80 hover:opacity-100 transition-all relative">
+                    <div class="w-12 h-12 rounded-lg bg-amber-600/20 text-amber-400 flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 mb-2">PRÓXIMAMENTE</span>
+                    <h3 class="font-bold text-slate-200 text-base">Acertijos Secretos</h3>
+                    <p class="text-xs text-slate-400 mt-1">Desbloquea pistas grupales resolviendo enigmas lógicos.</p>
+                </div>
+
+                <!-- Game 4: Collage de Recuerdos (Future) -->
+                <div class="glass-card rounded-xl p-5 border border-slate-800 opacity-80 hover:opacity-100 transition-all relative">
+                    <div class="w-12 h-12 rounded-lg bg-pink-600/20 text-pink-400 flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-border-all"></i>
+                    </div>
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 mb-2">PRÓXIMAMENTE</span>
+                    <h3 class="font-bold text-slate-200 text-base">Collage Dinámico</h3>
+                    <p class="text-xs text-slate-400 mt-1">Mosaico colectivo en tiempo real con recuerdos compartidos.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 3: INSTRUCCIONES -->
+        <section id="tab-instrucciones" class="tab-content hidden space-y-6 max-w-4xl mx-auto">
+            <div class="glass-panel p-8 rounded-2xl border border-slate-800 space-y-6">
+                <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-book-open text-indigo-400"></i>
+                    <span>¿Cómo funciona el Muro Secreto?</span>
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">1</div>
+                        <h4 class="font-semibold text-white text-sm">Personaliza el Reto</h4>
+                        <p class="text-xs text-slate-400">Cambia el título de la actividad y ajusta los nombres de las 10 categorías como desees.</p>
+                    </div>
+
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">2</div>
+                        <h4 class="font-semibold text-white text-sm">Sube tus fotos secretas</h4>
+                        <p class="text-xs text-slate-400">Carga la imagen correspondiente en cada categoría. Mientras esté activado el bloqueo, la imagen estará fuertemente blureada y oculta.</p>
+                    </div>
+
+                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">3</div>
+                        <h4 class="font-semibold text-white text-sm">Gran Revelación</h4>
+                        <p class="text-xs text-slate-400">Al llegar la hora/fecha elegida (o al usar la clave de revelación directa), las imágenes se desenfocarán para todos.</p>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-950/40 border border-indigo-800/40 p-4 rounded-xl text-xs text-indigo-200 flex items-start space-x-3">
+                    <i class="fa-solid fa-circle-info text-indigo-400 text-lg mt-0.5"></i>
+                    <div>
+                        <strong class="block text-indigo-100 font-semibold mb-1">Subida a GitHub Pages:</strong>
+                        Este archivo es completamente independiente (`index.html`). Solo debes subirlo a tu repositorio de GitHub para tener la aplicación en línea gratis con GitHub Pages. Toda la información se guarda localmente en el navegador.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Lightbox for Viewing Unlocked Image -->
+    <div id="image-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center space-y-4">
+            <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-slate-400 hover:text-white text-2xl p-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 id="modal-category-title" class="text-lg font-bold text-white tracking-wide"></h3>
+            <div class="overflow-hidden rounded-xl border border-slate-800 max-h-[75vh]">
+                <img id="modal-image" src="" alt="Foto expandida" class="max-w-full max-h-[75vh] object-contain">
+            </div>
+            <p id="modal-author" class="text-xs text-slate-400 italic"></p>
+        </div>
+    </div>
+
+    <!-- Hidden File Input for Image Upload -->
+    <input type="file" id="global-file-input" accept="image/*" class="hidden" onchange="handleFileSelected(event)">
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-600">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>Muro Secreto & Actividades &copy; 2026 - Listo para desplegar en GitHub Pages</p>
+        </div>
+    </footer>
+
+    <!-- Application Scripting -->
+    <script>
+        // State Keys & Defaults
+        const STORAGE_KEY = 'secret_wall_app_data_v1';
+        
+        let activeCategoryForUpload = null;
+        let adminOverride = false;
+
+        // Default initial state for 10 categories
+        const defaultCategories = [
+            { id: 1, name: 'Categoría 1: Disfraces o Ropa Rara', image: null, author: '' },
+            { id: 2, name: 'Categoría 2: Foto de la Infancia', image: null, author: '' },
+            { id: 3, name: 'Categoría 3: Lugar Favorito', image: null, author: '' },
+            { id: 4, name: 'Categoría 4: Comida Más Extraña', image: null, author: '' },
+            { id: 5, name: 'Categoría 5: Mascota o Animal', image: null, author: '' },
+            { id: 6, name: 'Categoría 6: Momento Divertido', image: null, author: '' },
+            { id: 7, name: 'Categoría 7: Meme de la Semana', image: null, author: '' },
+            { id: 8, name: 'Categoría 8: Objeto Nostálgico', image: null, author: '' },
+            { id: 9, name: 'Categoría 9: Paisaje Secreto', image: null, author: '' },
+            { id: 10, name: 'Categoría 10: Foto Enigmática', image: null, author: '' }
+        ];
+
+        // Default unlock time: 24 hours from now if fresh load
+        const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const defaultUnlockDate = tomorrow.toISOString().slice(0, 16);
+
+        let appData = {
+            activityTitle: 'Reto Fotográfico Secreto 2026',
+            unlockDate: defaultUnlockDate,
+            categories: defaultCategories
+        };
+
+        // Initialize App
+        window.onload = function() {
+            loadFromLocalStorage();
+            renderCategories();
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        };
+
+        // LocalStorage logic
+        function loadFromLocalStorage() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    appData = { ...appData, ...parsed };
+                } catch(e) {
+                    console.error("Error cargando LocalStorage", e);
+                }
+            }
+            // Populate inputs
+            document.getElementById('activity-title-input').value = appData.activityTitle;
+            document.getElementById('unlock-datetime').value = appData.unlockDate;
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        }
+
+        function saveActivityTitle(val) {
+            appData.activityTitle = val || 'Actividad Sin Nombre';
+            saveData();
+        }
+
+        function saveUnlockDate(val) {
+            appData.unlockDate = val;
+            saveData();
+            updateTimer();
+        }
+
+        function saveCategoryName(id, val) {
+            const cat = appData.categories.find(c => c.id === id);
+            if (cat) {
+                cat.name = val;
+                saveData();
+            }
+        }
+
+        // Lock & Timer Logic
+        function isLocked() {
+            if (adminOverride) return false;
+            if (!appData.unlockDate) return false;
+            const target = new Date(appData.unlockDate).getTime();
+            const now = new Date().getTime();
+            return now < target;
+        }
+
+        function toggleAdminOverride() {
+            adminOverride = !adminOverride;
+            const btnText = document.getElementById('admin-btn-text');
+            const btn = document.getElementById('admin-override-btn');
+            
+            if (adminOverride) {
+                btnText.innerText = "Modo Oculto Activo";
+                btn.classList.remove('bg-amber-500/10', 'text-amber-400', 'border-amber-500/30');
+                btn.classList.add('bg-rose-500/20', 'text-rose-300', 'border-rose-500/40');
+            } else {
+                btnText.innerText = "Modo Revelación Directa";
+                btn.classList.remove('bg-rose-500/20', 'text-rose-300', 'border-rose-500/40');
+                btn.classList.add('bg-amber-500/10', 'text-amber-400', 'border-amber-500/30');
+            }
+            renderCategories();
+            updateTimer();
+        }
+
+        function updateTimer() {
+            const timerElem = document.getElementById('countdown-timer');
+            const statusElem = document.getElementById('status-text');
+            const lockIcon = document.getElementById('global-lock-icon');
+
+            if (!appData.unlockDate) {
+                timerElem.innerText = "Sin fecha programada";
+                return;
+            }
+
+            const target = new Date(appData.unlockDate).getTime();
+            const now = new Date().getTime();
+            const diff = target - now;
+
+            const locked = isLocked();
+
+            if (locked) {
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                timerElem.innerText = `Desbloqueo en: ${hours}h ${minutes}m ${seconds}s`;
+                statusElem.innerText = "Estado: Fotos Contrabandeadas Ocultas (Bloqueado)";
+                statusElem.className = "font-medium text-rose-400";
+                
+                lockIcon.innerHTML = `
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                `;
+            } else {
+                timerElem.innerText = "¡FOTOS REVELADAS!";
+                statusElem.innerText = adminOverride ? "Estado: Revelación Forzada por Administrador" : "Estado: ¡Muro Desbloqueado!";
+                statusElem.className = "font-medium text-emerald-400";
+
+                lockIcon.innerHTML = `
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                `;
+            }
+
+            // Re-render categories status if state changed dynamically
+            const cards = document.querySelectorAll('.category-card');
+            cards.forEach(card => {
+                const isCardBlur = card.getAttribute('data-blurred') === 'true';
+                if (isCardBlur !== locked) {
+                    renderCategories();
+                }
+            });
+        }
+
+        // Render Cards Grid
+        function renderCategories() {
+            const grid = document.getElementById('categories-grid');
+            const locked = isLocked();
+
+            grid.innerHTML = appData.categories.map(cat => {
+                const hasImage = Boolean(cat.image);
+                
+                return `
+                <div class="category-card glass-card rounded-2xl p-4 border border-slate-800/80 flex flex-col justify-between space-y-3 relative group hover:border-slate-700 transition-all shadow-lg" data-blurred="${locked}">
+                    
+                    <!-- Editable Category Header -->
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                                Sección #${cat.id}
+                            </span>
+                            ${hasImage ? `
+                                <button onclick="deleteImage(${cat.id})" class="text-slate-500 hover:text-rose-400 text-xs p-1" title="Eliminar Foto">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                        <input type="text" 
+                            class="w-full bg-transparent font-semibold text-sm text-slate-200 border-b border-transparent hover:border-slate-700 focus:border-indigo-500 focus:outline-none transition-all py-1" 
+                            value="${cat.name}" 
+                            placeholder="Nombre de categoría..."
+                            onchange="saveCategoryName(${cat.id}, this.value)">
+                    </div>
+
+                    <!-- Photo Display Container -->
+                    <div class="relative w-full h-48 bg-slate-900 rounded-xl overflow-hidden border border-slate-800/60 flex items-center justify-center">
+                        ${hasImage ? `
+                            <!-- Image Present -->
+                            <img src="${cat.image}" alt="${cat.name}" class="w-full h-full object-cover ${locked ? 'locked-blur' : 'cursor-pointer hover:scale-105 transition-transform'}" onclick="${!locked ? `openImageModal(${cat.id})` : ''}">
+                            
+                            <!-- Blur Lock Overlay -->
+                            ${locked ? `
+                                <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md flex flex-col items-center justify-center p-3 text-center space-y-2">
+                                    <div class="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center shadow-inner">
+                                        <i class="fa-solid fa-lock text-sm"></i>
+                                    </div>
+                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wide">Oculto Hasta Revelación</p>
+                                    <p class="text-[10px] text-slate-400 leading-tight">La foto cargada no se revelará hasta la fecha límite.</p>
+                                </div>
+                            ` : `
+                                <div class="absolute bottom-2 right-2 bg-slate-950/80 text-white text-[10px] px-2 py-1 rounded-md border border-slate-700 pointer-events-none flex items-center space-x-1">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                    <span>Ver Foto</span>
+                                </div>
+                            `}
+                        ` : `
+                            <!-- Empty Upload State -->
+                            <div class="flex flex-col items-center justify-center space-y-2 text-slate-500 p-4 text-center">
+                                <div class="w-12 h-12 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 transition-colors">
+                                    <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                                </div>
+                                <span class="text-xs font-medium text-slate-400">Sin Foto Aún</span>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- Upload Action Button -->
+                    <div>
+                        <button onclick="triggerUpload(${cat.id})" class="w-full py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all ${hasImage ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-600/20'}">
+                            <i class="fa-solid ${hasImage ? 'fa-arrows-rotate' : 'fa-plus'}"></i>
+                            <span>${hasImage ? 'Cambiar Foto' : 'Subir Foto'}</span>
+                        </button>
+                    </div>
+
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Upload Handlers
+        function triggerUpload(catId) {
+            activeCategoryForUpload = catId;
+            document.getElementById('global-file-input').click();
+        }
+
+        function handleFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('Por favor selecciona un archivo de imagen válido.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                const cat = appData.categories.find(c => c.id === activeCategoryForUpload);
+                if (cat) {
+                    cat.image = dataUrl;
+                    saveData();
+                    renderCategories();
+                }
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function deleteImage(catId) {
+            const cat = appData.categories.find(c => c.id === catId);
+            if (cat) {
+                cat.image = null;
+                saveData();
+                renderCategories();
+            }
+        }
+
+        // Lightbox Modal Handlers
+        function openImageModal(catId) {
+            const cat = appData.categories.find(c => c.id === catId);
+            if (!cat || !cat.image) return;
+
+            document.getElementById('modal-category-title').innerText = cat.name;
+            document.getElementById('modal-image').src = cat.image;
+            document.getElementById('modal-author').innerText = `Categoría #${cat.id}`;
+            document.getElementById('image-modal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-modal').classList.add('hidden');
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = 'nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center space-x-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50';
+            });
+
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeNav) {
+                activeNav.className = 'nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center space-x-2 text-indigo-400 bg-indigo-500/10 border border-indigo-500/20';
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function resetDataPrompt() {
+            if (confirm("¿Estás seguro de resetear todos los nombres de categoría y fotos a los valores predeterminados?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                appData = {
+                    activityTitle: 'Reto Fotográfico Secreto 2026',
+                    unlockDate: defaultUnlockDate,
+                    categories: defaultCategories
+                };
+                saveData();
+                loadFromLocalStorage();
+                renderCategories();
+                updateTimer();
+            }
+        }
+    </script>
+</body>
+</html>
